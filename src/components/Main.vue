@@ -6,60 +6,99 @@ export default {
   el: '#aw',
   data () {
     return {
+      info: null,
       infos: null,
+      infonly: null,
       loading: true,
-      errored: false
+      errored: false,
+      search: "",
+      one: false
     }
   }, 
   mounted () {
     axios
       .get(baseUrl)
       .then(response => {
-        this.infos = Object.keys(response.data).sort().reduce(
+        if (this.search != ""){
+          this.info = response.data[this.search]
+          this.one = true;
+        }else{
+          this.infos = Object.keys(response.data).sort().reduce(
           (obj, key) => { 
             obj[key] = response.data[key]; 
             return obj;
           }, 
           {}
         );
+          this.one = false;
+        }
       })
       .catch(error => {
         console.log(error)
         this.errored = true
       })
       .finally(() => this.loading = false)
-  }
+  },
+  methods: {
+    changeOne(){
+      axios
+      .get(baseUrl)
+      .then(response => {
+          this.info = response.data[this.search]
+          this.one = true;
+      });
+      this.one = true;
+    }
+  },
 }
 </script>
 
 <template>
   <div id="aw">
     <h1>Guardian Tales</h1>
-  
+    <input type="text" v-model="search">
+    <button @click="changeOne">Search</button>
     <section v-if="errored">
       <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
     </section>
   
     <section v-else>
       <div v-if="loading">Loading...</div>
-  
-      <div class="grid"
-        v-else
+      
+      <div
+        v-else  class="grid"
       >
-        <div class="card" v-if="typeof infos == 'object'" v-for="info in infos">
-          <img :src="`https://raw.githubusercontent.com/gneiru/gt-assets/main/icon/heroes/${info.key}.png`">
-          <h3>{{ info.name }}</h3>
-          <label class="label">Element: </label>{{ info.element }}<br>
-          <label class="label">Class: </label>{{ info.class }}<br>
-          <label class="label">Exclusive Weapon: </label>{{ info.exw }}<br>
-          <label class="label">Compatible Equipment: </label>{{ info.equips }}<br>
-          <label class="label">Party Buff: </label>{{ info.party_buff }}<br>
-          <label class="label">Rarity: </label>{{ info.rarity }}<br><br>
-          <label class="label">Normal Attack: </label>{{ info.normal_title }}<br>{{ info.normal_desc }}<br><br>
-          <label class="label">Chain Skill: </label>{{ info.chain_title }}<br>{{ info.chain_desc }}<br><br>
-          <label class="label">Special Skill: </label>{{ info.special_title }}<br>{{ info.special_desc }}<br>
-          
+        <div v-for="info in infos" v-if="one == false">
+          <div class="card">
+            <img :src="`https://raw.githubusercontent.com/gneiru/gt-assets/main/icon/heroes/${info.key}.png`">
+            <h3>{{ info.name }}</h3>
+            <label class="label">Element: </label>{{ info.element }}<br>
+            <label class="label">Class: </label>{{ info.class }}<br>
+            <label class="label">Exclusive Weapon: </label>{{ info.exw }}<br>
+            <label class="label">Compatible Equipment: </label>{{ info.equips }}<br>
+            <label class="label">Party Buff: </label>{{ info.party_buff }}<br>
+            <label class="label">Rarity: </label>{{ info.rarity }}<br><br>
+            <label class="label">Normal Attack: </label>{{ info.normal_title }}<br>{{ info.normal_desc }}<br><br>
+            <label class="label">Chain Skill: </label>{{ info.chain_title }}<br>{{ info.chain_desc }}<br><br>
+            <label class="label">Special Skill: </label>{{ info.special_title }}<br>{{ info.special_desc }}<br>
+          </div>
         </div>
+        <div class="div" v-if="one">
+          <div class="card flex justify-center w-1/3">
+            <img :src="`https://raw.githubusercontent.com/gneiru/gt-assets/main/icon/heroes/${info.key}.png`">
+            <h3>{{ info.name }}</h3>
+            <label class="label">Element: </label>{{ info.element }}<br>
+            <label class="label">Class: </label>{{ info.class }}<br>
+            <label class="label">Exclusive Weapon: </label>{{ info.exw }}<br>
+            <label class="label">Compatible Equipment: </label>{{ info.equips }}<br>
+            <label class="label">Party Buff: </label>{{ info.party_buff }}<br>
+            <label class="label">Rarity: </label>{{ info.rarity }}<br><br>
+            <label class="label">Normal Attack: </label>{{ info.normal_title }}<br>{{ info.normal_desc }}<br><br>
+            <label class="label">Chain Skill: </label>{{ info.chain_title }}<br>{{ info.chain_desc }}<br><br>
+            <label class="label">Special Skill: </label>{{ info.special_title }}<br>{{ info.special_desc }}<br>
+          </div>
+        </div>
+        
         
       </div>
   
