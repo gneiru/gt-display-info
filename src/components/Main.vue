@@ -8,7 +8,6 @@ export default {
     return {
       info: null,
       infos: null,
-      infonly: null,
       loading: true,
       errored: false,
       search: "",
@@ -45,9 +44,26 @@ export default {
       .get(baseUrl)
       .then(response => {
           this.info = response.data[this.search]
-          this.one = true;
-      });
-      this.one = true;
+          this.one = true
+      })
+      .catch(error => {
+        console.log(error)
+        this.errored = true
+      })
+      .finally(() => this.loading = false);
+    },
+    fetchAll(){
+      axios
+      .get(baseUrl)
+      .then(response => {
+          this.info = response.data
+          this.one = false
+      })
+      .catch(error => {
+        console.log(error)
+        this.errored = true
+      })
+      .finally(() => this.loading = false);
     }
   },
 }
@@ -56,14 +72,33 @@ export default {
 <template>
   <div id="aw">
     <h1>Guardian Tales</h1>
-    <input type="text" v-model="search">
-    <button @click="changeOne">Search</button>
+    <div class="search">
+      <input type="text" v-model="search" placeholder="Xellos" @keyup.enter="changeOne">
+      <button @click="changeOne">Search</button>
+      <button @click="fetchAll">Reset</button>
+    </div>
     <section v-if="errored">
       <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
     </section>
   
     <section v-else>
       <div v-if="loading">Loading...</div>
+      
+      <div class="div" v-if="one">
+        <div class="card" style="max-width: 400px;">
+          <img :src="`https://raw.githubusercontent.com/gneiru/gt-assets/main/icon/heroes/${info.key}.png`">
+          <h3>{{ info.name }}</h3>
+          <label class="label">Element: </label>{{ info.element }}<br>
+          <label class="label">Class: </label>{{ info.class }}<br>
+          <label class="label">Exclusive Weapon: </label>{{ info.exw }}<br>
+          <label class="label">Compatible Equipment: </label>{{ info.equips }}<br>
+          <label class="label">Party Buff: </label>{{ info.party_buff }}<br>
+          <label class="label">Rarity: </label>{{ info.rarity }}<br><br>
+          <label class="label">Normal Attack: </label>{{ info.normal_title }}<br>{{ info.normal_desc }}<br><br>
+          <label class="label">Chain Skill: </label>{{ info.chain_title }}<br>{{ info.chain_desc }}<br><br>
+          <label class="label">Special Skill: </label>{{ info.special_title }}<br>{{ info.special_desc }}<br>
+        </div>
+      </div>
       
       <div
         v-else  class="grid"
@@ -83,21 +118,7 @@ export default {
             <label class="label">Special Skill: </label>{{ info.special_title }}<br>{{ info.special_desc }}<br>
           </div>
         </div>
-        <div class="div" v-if="one">
-          <div class="card flex justify-center w-1/3">
-            <img :src="`https://raw.githubusercontent.com/gneiru/gt-assets/main/icon/heroes/${info.key}.png`">
-            <h3>{{ info.name }}</h3>
-            <label class="label">Element: </label>{{ info.element }}<br>
-            <label class="label">Class: </label>{{ info.class }}<br>
-            <label class="label">Exclusive Weapon: </label>{{ info.exw }}<br>
-            <label class="label">Compatible Equipment: </label>{{ info.equips }}<br>
-            <label class="label">Party Buff: </label>{{ info.party_buff }}<br>
-            <label class="label">Rarity: </label>{{ info.rarity }}<br><br>
-            <label class="label">Normal Attack: </label>{{ info.normal_title }}<br>{{ info.normal_desc }}<br><br>
-            <label class="label">Chain Skill: </label>{{ info.chain_title }}<br>{{ info.chain_desc }}<br><br>
-            <label class="label">Special Skill: </label>{{ info.special_title }}<br>{{ info.special_desc }}<br>
-          </div>
-        </div>
+        
         
         
       </div>
@@ -107,6 +128,9 @@ export default {
 </template>
 
 <style scoped>
+.single-card {
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+}
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -114,11 +138,11 @@ export default {
   align-items: stretch;
 }
 .card {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   background-color: #212121;
-  box-shadow: 15px 15px 30px #191919,
-               -15px -15px 30px #292929;
-  transition: border-radius cubic-bezier(0.075, 0.82, 0.165, 1) 1s,
-               transform cubic-bezier(0.075, 0.82, 0.165, 1) 1s;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
   text-align: left;
  }
  .card img {
@@ -136,5 +160,32 @@ export default {
 .label {
   font-weight: bold;
 }
+.search{
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.search button{
+  background-color: #212121;
+  outline: solid #212121;
+  color: white;
+  height: 40px;
+  border-radius: 10px;
+  margin: 4px;
+}
+.search button:hover{
+  outline-style: solid;
+  outline-color: white;
+}
+.search input {
+  height: 40px;
+  line-height: 28px;
+  padding: 0 1rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  outline: none;
+  background-color: #f3f3f4;
+  color: #0d0c22;
+  transition: .3s ease;
+ }
 
 </style>
