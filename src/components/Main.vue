@@ -10,7 +10,7 @@ export default {
       infos: null,
       loading: true,
       errored: false,
-      search: "",
+      search: null,
       one: false
     }
   }, 
@@ -18,10 +18,6 @@ export default {
     axios
       .get(baseUrl)
       .then(response => {
-        if (this.search != ""){
-          this.info = response.data[this.search]
-          this.one = true;
-        }else{
           this.infos = Object.keys(response.data).sort().reduce(
           (obj, key) => { 
             obj[key] = response.data[key]; 
@@ -30,7 +26,6 @@ export default {
           {}
         );
           this.one = false;
-        }
       })
       .catch(error => {
         console.log(error)
@@ -39,12 +34,33 @@ export default {
       .finally(() => this.loading = false)
   },
   methods: {
+    initSearch(){
+      this.loading = true
+      this.errored = false
+      if (this.search === null){
+        return errored = true
+      }
+      this.search = this.search.replace(" ","_")
+      return this.search
+    },
     changeOne(){
+      this.search = this.initSearch()
       axios
       .get(baseUrl)
       .then(response => {
-          this.info = response.data[this.search]
-          this.one = true
+        console.log(this.search.toLowerCase())
+          this.info = response.data[this.search.toLowerCase()]
+          if(this.info == undefined){
+            return this.errored = true
+          }
+          if(Array.isArray(this.info)){
+            this.infos = response.data[this.search.toLowerCase()]
+            this.search = this.search.replace("_"," ")
+            this.one = false
+          }else{
+            this.one = true
+          }
+          this.search = this.search.replace("_"," ")
       })
       .catch(error => {
         console.log(error)
@@ -53,11 +69,19 @@ export default {
       .finally(() => this.loading = false);
     },
     fetchAll(){
+      this.loading = true
       axios
       .get(baseUrl)
       .then(response => {
-          this.info = response.data
+        this.infos = Object.keys(response.data).sort().reduce(
+          (obj, key) => { 
+            obj[key] = response.data[key]; 
+            return obj;
+          }, 
+          {}
+        );
           this.one = false
+          this.search = null
       })
       .catch(error => {
         console.log(error)
@@ -73,9 +97,9 @@ export default {
   <div id="aw">
     <h1>Guardian Tales</h1>
     <div class="search">
-      <input type="text" v-model="search" placeholder="Xellos" @keyup.enter="changeOne">
+      <input type="text" v-model="search" placeholder="future princess" @keyup.enter="changeOne">
       <button @click="changeOne">Search</button>
-      <button @click="fetchAll">Reset</button>
+      <button @click="fetchAll" style="background-color: #212121;">Reset</button>
     </div>
     <section v-if="errored">
       <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
@@ -161,23 +185,21 @@ export default {
   font-weight: bold;
 }
 .search{
-  padding: 4px;
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
 }
 .search button{
-  background-color: #212121;
-  outline: solid #212121;
+  background-color: #49334E;
+  line-height: 28px;
+  padding: 0 1rem;
   color: white;
   height: 40px;
-  border-radius: 10px;
-  margin: 4px;
-}
-.search button:hover{
-  outline-style: solid;
-  outline-color: white;
+  margin-left: 2px;
+  border-radius: 5px;
 }
 .search input {
-  height: 40px;
+  height: 38px;
   line-height: 28px;
   padding: 0 1rem;
   border: 2px solid transparent;
